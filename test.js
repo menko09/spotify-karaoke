@@ -57,3 +57,73 @@ assert.match(apiErrorMessage(403, { error: { reason: 'PREMIUM_REQUIRED' } }), /P
 assert.match(apiErrorMessage(429), /slow down/);
 assert.match(apiErrorMessage(403, { error: { message: 'Insufficient client scope' } }), /log in again/i);
 console.log('v3 tests passed');
+
+// ---- v4: title cleaner ----
+const { cleanTitle, parseYouTubeId, orderInstances, tryInstances, normPiped, normInvidious, normAudius, ytErrorMessage } = require('./app.js');
+const ct = (raw, fb) => { const r = cleanTitle(raw, fb); return r.artist + ' / ' + r.title; };
+assert.strictEqual(ct('Adele - Hello (Karaoke Version)'), 'Adele / Hello');
+assert.strictEqual(ct('Adele - Hello [Official Video]'), 'Adele / Hello');
+assert.strictEqual(ct('Queen - Bohemian Rhapsody (Official Video Remastered)'), 'Queen / Bohemian Rhapsody');
+assert.strictEqual(ct('Hello (In the Style of Adele) [Karaoke Version]'), 'Adele / Hello');
+assert.strictEqual(ct('Sing King Karaoke - Hello (In the Style of Adele)'), 'Adele / Hello');
+assert.strictEqual(ct('Karaoke - Adele - Hello'), 'Adele / Hello');
+assert.strictEqual(ct('Adele - Hello | Karaoke Version | Sing King'), 'Adele / Hello');
+assert.strictEqual(ct('Adele - Hello - Karaoke Version'), 'Adele / Hello');
+assert.strictEqual(ct('Adele – Hello (Karaoke)'), 'Adele / Hello');
+assert.strictEqual(ct('Drake ft. Rihanna - Take Care'), 'Drake / Take Care');
+assert.strictEqual(ct('Hello (Karaoke Version)'), ' / Hello');
+assert.strictEqual(ct('Wonderwall', 'Oasis - Topic'), 'Oasis / Wonderwall');
+assert.strictEqual(ct('Wonderwall', ''), ' / Wonderwall');
+assert.strictEqual(ct('Adele - Hello (Live at the Royal Albert Hall)'), 'Adele / Hello (Live at the Royal Albert Hall)');
+// file names, incl. Forge3's "_instrumental"
+assert.strictEqual(ct('Adele - Hello_instrumental.mp3'), 'Adele / Hello');
+assert.strictEqual(ct('Artist_-_Song_Name_instrumental.mp3'), 'Artist / Song Name');
+assert.strictEqual(ct('Song Only_instrumental.wav'), ' / Song Only');
+assert.strictEqual(ct('01 - Coldplay - Yellow.mp3'), 'Coldplay / Yellow');
+assert.strictEqual(ct(''), ' / ');
+assert.strictEqual(ct(null), ' / ');
+
+assert.strictEqual(parseYouTubeId('https://www.youtube.com/watch?v=dQw4w9WgXcQ'), 'dQw4w9WgXcQ');
+assert.strictEqual(parseYouTubeId('https://www.youtube.com/watch?feature=x&v=dQw4w9WgXcQ&t=5'), 'dQw4w9WgXcQ');
+assert.strictEqual(parseYouTubeId('https://youtu.be/dQw4w9WgXcQ?si=abc'), 'dQw4w9WgXcQ');
+assert.strictEqual(parseYouTubeId('https://youtube.com/shorts/dQw4w9WgXcQ'), 'dQw4w9WgXcQ');
+assert.strictEqual(parseYouTubeId('Wonderwalls'), null);
+assert.strictEqual(parseYouTubeId('adele hello'), null);
+
+// ---- v4: normalizers ----
+assert.deepStrictEqual(normPiped({ items: [{ type: 'stream', url: '/watch?v=abcdefghijk', title: 'T', uploaderName: 'U', duration: 200 }, { type: 'channel', url: '/channel/x' }, { type: 'stream', url: '/watch?v=live1234567', duration: -1 }] }).map(v => [v.id, v.duration]), [['abcdefghijk', 200], ['live1234567', 0]]);
+assert.deepStrictEqual(normInvidious([{ type: 'video', videoId: 'abcdefghijk', title: 'T', author: 'A', lengthSeconds: 90 }, { type: 'channel' }]).map(v => [v.id, v.channel, v.duration]), [['abcdefghijk', 'A', 90]]);
+assert.deepStrictEqual(normInvidious('<html>'), []);
+const au = normAudius({ data: [{ id: 'D7KyD', title: 'Song', duration: 180, user: { name: 'Bob' }, artwork: { '150x150': 'a.jpg' } }, { id: 'x', is_streamable: false }] });
+assert.deepStrictEqual(au, [{ id: 'D7KyD', title: 'Song', artist: 'Bob', duration: 180, art: 'a.jpg' }]);
+assert.match(ytErrorMessage(150), /does not allow/);
+assert.match(ytErrorMessage(101), /does not allow/);
+
+// ---- v4: instance fallback ----
+assert.deepStrictEqual(orderInstances(['https://a/', 'https://b', 'https://a'], 'https://b/'), ['https://b', 'https://a']);
+assert.deepStrictEqual(orderInstances(['https://a', 'https://b'], 'https://zzz'), ['https://a', 'https://b']);
+assert.deepStrictEqual(orderInstances(undefined, null), []);
+(async () => {
+  const calls = [];
+  // first fails, second hangs past the timeout, third answers
+  const r = await tryInstances(['bad', 'slow', 'good'], async (base, signal) => {
+    calls.push(base);
+    if (base === 'bad') throw new Error('HTTP 403');
+    if (base === 'slow') { await new Promise((res, rej) => { signal.addEventListener('abort', () => rej(new Error('aborted'))); }); }
+    return 'ok:' + base;
+  }, 60);
+  assert.deepStrictEqual(r, { base: 'good', result: 'ok:good' });
+  assert.deepStrictEqual(calls, ['bad', 'slow', 'good']);
+  // stops at the first success
+  calls.length = 0;
+  await tryInstances(['one', 'two'], async b => { calls.push(b); return 1; }, 60);
+  assert.deepStrictEqual(calls, ['one']);
+  // all fail: error lists every reason
+  await assert.rejects(() => tryInstances(['x', 'y'], async b => { throw new Error('boom ' + b); }, 60), e => {
+    assert.strictEqual(e.errors.length, 2);
+    assert.match(e.errors[0], /x: boom x/);
+    return true;
+  });
+  await assert.rejects(() => tryInstances([], async () => 1, 60));
+  console.log('v4 tests passed');
+})();

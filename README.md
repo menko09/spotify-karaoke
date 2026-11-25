@@ -44,3 +44,12 @@ New Spotify apps are in Development mode: only your own account (and users you a
 The **Browse** tab has Search (with a "Karaoke versions" toggle), Playlists, For you (your recent top tracks and recently played) and Up next (the queue). Play and Add to queue control the Spotify app that is already open on your phone or laptop; if none is active, press play once in Spotify first. Prev / play-pause / next sit next to the tabs.
 
 Browse needs extra permissions (modify playback, playlists, top tracks, recently played). If you logged in before v3, a yellow banner asks you to log in again once.
+
+## Free sources (v4)
+
+The bar at the top switches between **Spotify**, **YouTube**, **Audius** and **My files**. The lyrics engine is the same for all of them. No keys or accounts are needed for the last three, and Spotify polling pauses while another source is active.
+
+- **YouTube**: search (or paste a YouTube link) and play in a small embedded player. The exact player time drives the lyrics. Karaoke videos often have different timing, so use the timing slider. Titles like "Adele - Hello (Karaoke Version)" are cleaned for the lyrics lookup; use **Edit artist/title** if the wrong lyrics (or none) show up. Some videos block embedding and show a message.
+- **Audius**: search free tracks and stream them.
+- **My files**: pick MP3/WAV files from your device (nothing is uploaded). Names like `Artist - Title.mp3` are read for the lookup; `_instrumental` is ignored.
+- YouTube search uses public Piped/Invidious servers listed in `config.js` (`PIPED_INSTANCES`, `INVIDIOUS_INSTANCES`). Public servers die often: if search says it is down, paste a link instead, or edit those lists.

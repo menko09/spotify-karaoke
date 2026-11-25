@@ -6,10 +6,16 @@
 <meta name="theme-color" content="#0b0b10">
 <title>Spotify Karaoke</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <main id="app">
+  <nav id="sources" aria-label="Music source">
+    <button class="src active" data-src="spotify" aria-pressed="true">Spotify</button>
+    <button class="src" data-src="youtube" aria-pressed="false">YouTube</button>
+    <button class="src" data-src="audius" aria-pressed="false">Audius</button>
+    <button class="src" data-src="files" aria-pressed="false">My files</button>
+  </nav>
   <section id="login" class="panel" hidden>
     <h1>Spotify Karaoke</h1>
     <p>Play music in your Spotify app. Synced lyrics show up here.</p>
@@ -40,6 +46,12 @@
     <div id="scope-banner" class="banner" hidden>
       <span>New features need extra Spotify permissions.</span>
       <button id="relogin-btn" class="act">Log in again</button>
+    </div>
+
+    <div id="media">
+      <div id="yt-wrap" hidden><div id="yt-player"></div></div>
+      <audio id="audio" controls preload="none" hidden></audio>
+      <div id="media-note" class="banner" role="alert" hidden></div>
     </div>
 
     <div id="lyrics" aria-live="off"></div>
@@ -79,16 +91,36 @@
         <div id="queue-list"></div>
       </div>
     </section>
+    <section id="browse-other" hidden>
+      <p id="o-hint" class="note"></p>
+      <form id="o-form" role="search">
+        <input id="o-input" type="search" aria-label="Search" autocomplete="off" enterkeyhint="search">
+        <button class="act" type="submit">Search</button>
+      </form>
+      <label id="o-karaoke-label" class="toggle"><input id="o-karaoke" type="checkbox"> Karaoke versions</label>
+      <div id="o-file-row" hidden>
+        <input id="file-input" type="file" accept=".mp3,.wav,audio/mpeg,audio/wav,audio/x-wav" multiple class="visually-hidden">
+        <label class="act filebtn" for="file-input">Choose MP3 / WAV files</label>
+      </div>
+      <div id="o-results"></div>
+    </section>
     <div id="toast" class="toast" role="status" hidden></div>
+
+    <form id="edit-box" hidden>
+      <input id="edit-artist" placeholder="Artist" aria-label="Artist" autocomplete="off">
+      <input id="edit-title" placeholder="Title" aria-label="Title" autocomplete="off" required>
+      <button class="act" type="submit">Find lyrics</button>
+    </form>
 
     <footer id="bottom">
       <label for="offset">Timing <output id="offset-val">0.0 s</output></label>
       <input id="offset" type="range" min="-3" max="3" step="0.1" value="0.8">
       <button id="logout-btn" class="link">Log out</button>
+      <button id="edit-link" class="link" hidden>Edit artist/title</button>
     </footer>
   </section>
 </main>
-<script src="config.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<script src="config.js?v=4"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
