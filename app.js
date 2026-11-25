@@ -158,7 +158,10 @@ if (typeof document !== 'undefined') (function () {
     $('album').textContent = item.album ? item.album.name : '';
     const img = item.album && item.album.images && (item.album.images[1] || item.album.images[0]);
     $('art').src = img ? img.url : '';
-    S.offset = parseFloat(localStorage.getItem('offset:' + item.id) || '0') || 0;
+    // Per-song offset if set, else the user's last-used offset, else a 0.8 s lead
+    // (Spotify's reported position runs a bit behind and singers need time to read ahead).
+    const saved = localStorage.getItem('offset:' + item.id) ?? localStorage.getItem('offset:default');
+    S.offset = saved !== null && !isNaN(parseFloat(saved)) ? parseFloat(saved) : 0.8;
     $('offset').value = S.offset;
     $('offset-val').textContent = fmtOffset(S.offset);
     S.lines = []; S.idx = -2; lineEls = [];
@@ -295,6 +298,7 @@ if (typeof document !== 'undefined') (function () {
       S.offset = parseFloat(e.target.value);
       $('offset-val').textContent = fmtOffset(S.offset);
       if (S.id) localStorage.setItem('offset:' + S.id, S.offset);
+      localStorage.setItem('offset:default', S.offset); // new songs start from this
       S.idx = -2;
     });
     const fs = $('fs-btn');
