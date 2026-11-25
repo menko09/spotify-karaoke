@@ -38,3 +38,9 @@ New Spotify apps are in Development mode: only your own account (and users you a
 - Lyrics come from LRCLIB; coverage varies. Unsynced lyrics are shown as plain scrolling text, no highlight.
 - Spotify's progress is only as fresh as the last poll; use the slider if a device lags (Bluetooth speakers, etc.).
 - Wake Lock needs HTTPS or 127.0.0.1 and a user gesture on some browsers.
+
+## Browse panel (v3)
+
+The **Browse** tab has Search (with a "Karaoke versions" toggle), Playlists, For you (your recent top tracks and recently played) and Up next (the queue). Play and Add to queue control the Spotify app that is already open on your phone or laptop; if none is active, press play once in Spotify first. Prev / play-pause / next sit next to the tabs.
+
+Browse needs extra permissions (modify playback, playlists, top tracks, recently played). If you logged in before v3, a yellow banner asks you to log in again once.

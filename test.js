@@ -33,3 +33,27 @@ const best = pickBest([{ duration: 300, plainLyrics: 'x' }, { duration: 250, syn
 assert.strictEqual(best.duration, 201);
 assert.strictEqual(pickBest([], 1), null);
 console.log('all tests passed');
+
+// ---- v3 helpers ----
+const { SCOPE_LIST, hasScopes, searchQuery, normTrack, dedupeTracks, apiErrorMessage } = require('./app.js');
+assert.ok(hasScopes(SCOPE_LIST.join(' '), SCOPE_LIST));
+assert.ok(!hasScopes('user-read-currently-playing user-read-playback-state', SCOPE_LIST));
+assert.ok(!hasScopes(undefined, SCOPE_LIST));
+assert.ok(hasScopes('b  a c', ['a', 'b']));
+assert.strictEqual(searchQuery('  hello   world ', false), 'hello world');
+assert.strictEqual(searchQuery('hello', true), 'hello karaoke');
+assert.strictEqual(searchQuery('hello Karaoke', true), 'hello Karaoke');
+assert.strictEqual(searchQuery('   ', true), '');
+const tr = normTrack({ id: 'a', uri: 'spotify:track:a', name: 'N', artists: [{ name: 'X' }, { name: 'Y' }], album: { images: [{ url: 'big' }, { url: 'small' }] }, duration_ms: 5 });
+assert.deepStrictEqual(tr, { id: 'a', uri: 'spotify:track:a', name: 'N', artists: 'X, Y', art: 'small', duration: 5 });
+assert.strictEqual(normTrack(null), null);
+assert.strictEqual(normTrack({ id: 'e', uri: 'spotify:episode:e', type: 'episode' }), null);
+assert.strictEqual(normTrack({ id: null, uri: 'spotify:local:x' }), null);
+assert.strictEqual(normTrack({ id: 'b', uri: 'u', artists: [], album: null }).art, '');
+assert.deepStrictEqual(dedupeTracks([{ id: 1 }, { id: 2 }, { id: 1 }]).map(t => t.id), [1, 2]);
+assert.match(apiErrorMessage(404, { error: { reason: 'NO_ACTIVE_DEVICE' } }), /Open Spotify on your phone or laptop and press play once/);
+assert.match(apiErrorMessage(404, { error: { message: 'Player command failed: No active device found' } }), /press play once/);
+assert.match(apiErrorMessage(403, { error: { reason: 'PREMIUM_REQUIRED' } }), /Premium/);
+assert.match(apiErrorMessage(429), /slow down/);
+assert.match(apiErrorMessage(403, { error: { message: 'Insufficient client scope' } }), /log in again/i);
+console.log('v3 tests passed');

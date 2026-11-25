@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#0b0b10">
 <title>Spotify Karaoke</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 <main id="app">
@@ -29,8 +29,57 @@
       <button id="fs-btn" class="icon" aria-label="Toggle fullscreen">&#9974;</button>
     </header>
 
+    <nav id="tabs" aria-label="Views">
+      <button class="tab active" data-view="lyrics" aria-selected="true">Lyrics</button>
+      <button class="tab" data-view="browse" aria-selected="false">Browse</button>
+      <span class="spacer"></span>
+      <button id="prev" class="icon sm" aria-label="Previous song">&#9198;</button>
+      <button id="pp" class="icon sm" aria-label="Play or pause">&#9199;</button>
+      <button id="next" class="icon sm" aria-label="Next song">&#9197;</button>
+    </nav>
+    <div id="scope-banner" class="banner" hidden>
+      <span>New features need extra Spotify permissions.</span>
+      <button id="relogin-btn" class="act">Log in again</button>
+    </div>
+
     <div id="lyrics" aria-live="off"></div>
     <div id="message" class="message" role="status" hidden></div>
+
+    <section id="browse" hidden>
+      <nav id="subtabs" aria-label="Browse sections">
+        <button class="subtab active" data-sec="search" aria-selected="true">Search</button>
+        <button class="subtab" data-sec="playlists" aria-selected="false">Playlists</button>
+        <button class="subtab" data-sec="suggest" aria-selected="false">For you</button>
+        <button class="subtab" data-sec="queue" aria-selected="false">Up next</button>
+      </nav>
+      <div id="sec-search" class="sec">
+        <form id="search-form" role="search">
+          <input id="search-input" type="search" placeholder="Search songs or artists" aria-label="Search songs" autocomplete="off" enterkeyhint="search">
+          <button class="act" type="submit">Search</button>
+        </form>
+        <label class="toggle"><input id="karaoke-toggle" type="checkbox"> Karaoke versions</label>
+        <div id="search-results"></div>
+      </div>
+      <div id="sec-playlists" class="sec" hidden>
+        <div id="pl-list-view"><div id="pl-list"></div></div>
+        <div id="pl-tracks-view" hidden>
+          <div class="subhead"><button id="pl-back" class="act ghost">&#8249; Back</button><h2 id="pl-title"></h2></div>
+          <div id="pl-items"></div>
+          <button id="pl-more" class="act ghost wide" hidden>Load more</button>
+        </div>
+      </div>
+      <div id="sec-suggest" class="sec" hidden>
+        <h2>Your top tracks lately</h2>
+        <div id="top-list"></div>
+        <h2>Recently played</h2>
+        <div id="recent-list"></div>
+      </div>
+      <div id="sec-queue" class="sec" hidden>
+        <div class="subhead"><h2>Up next</h2><button id="queue-refresh" class="act ghost">Refresh</button></div>
+        <div id="queue-list"></div>
+      </div>
+    </section>
+    <div id="toast" class="toast" role="status" hidden></div>
 
     <footer id="bottom">
       <label for="offset">Timing <output id="offset-val">0.0 s</output></label>
@@ -39,7 +88,7 @@
     </footer>
   </section>
 </main>
-<script src="config.js?v=2"></script>
-<script src="app.js?v=2"></script>
+<script src="config.js?v=3"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>
